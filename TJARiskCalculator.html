@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ambulatory TJA Risk Calculator</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #0b0e14;
+            color: #c8cdd8;
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .header {
+            background: #131822;
+            border-bottom: 1px solid #1e293b;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .header-title { font-size: 15px; font-weight: 600; color: #eef0f4; letter-spacing: -0.3px; }
+        .header-subtitle { font-size: 10px; color: #64748b; margin-top: 2px; font-family: 'Courier New', monospace; }
+
+        .reset-btn {
+            font-size: 11px; color: #94a3b8;
+            border: 1px solid #334155; background: transparent;
+            padding: 5px 12px; border-radius: 6px; cursor: pointer; font-family: inherit;
+        }
+        .reset-btn:hover { background: #1e293b; }
+
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 18px 20px;
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+        }
+
+        .form-section { flex: 1; min-width: 0; }
+
+        .results-panel {
+            width: 320px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 74px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .section { margin-bottom: 20px; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #1e293b;
+            margin-bottom: 10px;
+        }
+
+        .section-dot { width: 5px; height: 5px; border-radius: 50%; background: #4f90f6; flex-shrink: 0; }
+        .section-dot-amber { background: #f59e0b; }
+        .section-dot-rose  { background: #f43f5e; }
+        .section-dot-teal  { background: #14b8a6; }
+        .section-dot-muted { background: #475569; }
+
+        .section-title {
+            font-size: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1.2px; color: #64748b;
+        }
+        .section-note {
+            font-size: 10px; color: #475569;
+            font-style: italic; letter-spacing: 0; font-weight: 400;
+        }
+
+        .demographics-row { display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+
+        .number-input-container { display: flex; align-items: center; gap: 8px; padding: 4px 0; }
+        .input-label { font-size: 12px; color: #94a3b8; width: 88px; flex-shrink: 0; }
+        .input-label-wide { width: 110px; }
+
+        .number-input {
+            width: 68px; background: #1e293b; border: 1px solid #334155;
+            border-radius: 6px; padding: 5px 8px; font-size: 13px; color: #fff;
+            outline: none; font-family: 'Courier New', monospace;
+        }
+        .number-input:focus { border-color: #4f90f6; }
+        .unit-label { font-size: 11px; color: #64748b; }
+
+        .button-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+        .btn {
+            padding: 4px 12px; border-radius: 6px; border: none;
+            cursor: pointer; font-size: 12px; font-family: inherit;
+            transition: all 0.15s; white-space: nowrap;
+        }
+        .btn-active   { background: #4f90f6; color: #fff; }
+        .btn-inactive { background: #1e293b; color: #94a3b8; }
+
+        /* Lab rows */
+        .lab-grid {
+            display: flex; flex-direction: column; gap: 6px;
+            background: #0f1419; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;
+        }
+        .lab-row { display: flex; align-items: center; gap: 10px; }
+        .lab-label { font-size: 12px; color: #94a3b8; width: 130px; flex-shrink: 0; }
+        .lab-note {
+            font-size: 10px; color: #475569; font-style: italic;
+            margin-top: 6px; padding-top: 6px; border-top: 1px solid #1e293b;
+        }
+
+        /* Comorbidities */
+        .comorbidity-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+
+        .toggle-container {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 6px 0; cursor: pointer;
+        }
+        .toggle-label { font-size: 13px; transition: color 0.15s; }
+        .toggle-switch {
+            width: 36px; height: 20px; border-radius: 10px;
+            position: relative; cursor: pointer; transition: all 0.2s; flex-shrink: 0;
+        }
+        .toggle-knob {
+            width: 14px; height: 14px; border-radius: 7px; background: #fff;
+            position: absolute; top: 2px; transition: left 0.2s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+        }
+
+        /* Utilization */
+        .utilization-box {
+            display: flex; flex-wrap: wrap; gap: 0 24px;
+            background: #0f1419; padding: 12px; border-radius: 8px; border: 1px solid #1e293b;
+        }
+        .utilization-note { font-size: 11px; color: #64748b; font-style: italic; margin-top: 8px; width: 100%; }
+
+        /* High-risk flags */
+        .flags-grid {
+            display: flex; flex-direction: column; gap: 2px;
+            background: #0f1419; padding: 12px; border-radius: 8px; border: 1px solid #2d1b22;
+        }
+        .flags-grid-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+        .flags-note {
+            font-size: 10px; color: #64748b; font-style: italic;
+            margin-top: 8px; padding-top: 8px; border-top: 1px solid #1e293b;
+        }
+
+        /* Comorbidity count badge */
+        .comorbidity-count-badge {
+            font-size: 10px; background: #1e293b; color: #94a3b8;
+            border: 1px solid #334155; border-radius: 4px;
+            padding: 2px 7px; font-family: 'Courier New', monospace; margin-left: auto;
+        }
+        .comorbidity-count-badge.count-high { background: #1f0a0e; color: #f87171; border-color: #3b1518; }
+
+        /* Reference table */
+        .reference-toggle-btn {
+            width: 100%; display: flex; align-items: center; gap: 8px;
+            background: #0f1419; border: 1px solid #1e293b; border-radius: 8px;
+            padding: 10px 14px; cursor: pointer; font-family: inherit;
+            color: #64748b; font-size: 11px; text-align: left;
+            transition: background 0.15s;
+        }
+        .reference-toggle-btn:hover { background: #131822; }
+        .reference-toggle-btn .ref-chevron { margin-left: auto; transition: transform 0.2s; font-size: 10px; }
+        .reference-toggle-btn.open .ref-chevron { transform: rotate(180deg); }
+
+        .reference-panel {
+            display: none;
+            margin-top: 8px;
+            background: #0d1117;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .reference-panel.open { display: block; }
+
+        .ref-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        .ref-table th {
+            background: #131822; color: #64748b; font-size: 9px;
+            text-transform: uppercase; letter-spacing: 1px;
+            padding: 7px 12px; text-align: left;
+            border-bottom: 1px solid #1e293b;
+        }
+        .ref-table td {
+            padding: 6px 12px; color: #94a3b8;
+            border-bottom: 1px solid #0f1419; vertical-align: top;
+        }
+        .ref-table tr:last-child td { border-bottom: none; }
+        .ref-table tr:hover td { background: #131822; }
+
+        .ref-criterion { color: #c8cdd8; font-weight: 500; }
+        .ref-standard { color: #4ade80; }
+        .ref-conditional { color: #f59e0b; }
+        .ref-exclusion { color: #f87171; }
+        .ref-model-note { font-size: 9px; color: #475569; margin-top: 2px; font-style: italic; }
+
+        /* Results panel */
+        .card {
+            background: #131822; border-radius: 10px;
+            border: 1px solid #1e293b; padding: 16px;
+        }
+        .risk-gauge-container { display: block; margin: 0 auto; }
+        .risk-legend {
+            display: flex; justify-content: center; gap: 10px;
+            margin-top: 10px; font-size: 9px; flex-wrap: wrap;
+        }
+        .risk-category-row {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-top: 10px; padding-top: 10px; border-top: 1px solid #1e293b;
+        }
+        .risk-category-label { font-size: 11px; color: #64748b; }
+        .risk-category-value { font-size: 11px; font-weight: 600; }
+
+        .assessment-card {
+            background: #131822; border-radius: 10px;
+            border: 1px solid #1e293b; padding: 14px;
+        }
+        .assessment-title {
+            font-size: 10px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 1px;
+            color: #64748b; margin-bottom: 8px;
+        }
+
+        .flag-header  { font-size: 11px; font-weight: 600; color: #f87171; margin-bottom: 4px; }
+        .flag-item {
+            font-size: 10px; background: #1f0a0e; color: #f87171;
+            border: 1px solid #3b1518; padding: 2px 6px;
+            border-radius: 4px; margin-bottom: 2px;
+        }
+        .assess-success  { font-size: 11px; color: #4ade80; }
+        .assess-candidate { font-size: 11px; color: #34d399; }
+        .assess-warning  { font-size: 11px; color: #fbbf24; }
+        .assess-note     { font-size: 10px; color: #64748b; margin-top: 3px; }
+
+        .recommendation-card { border-radius: 10px; padding: 14px; }
+        .recommendation-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+        .recommendation-body  { font-size: 11px; color: #94a3b8; line-height: 1.5; }
+
+        .footer-text { font-size: 10px; color: #475569; line-height: 1.5; padding-top: 4px; }
+        .footer-emphasis { color: #64748b; font-weight: 600; }
+
+        @media (max-width: 820px) {
+            .container { flex-direction: column; }
+            .results-panel { width: 100%; position: static; }
+            .comorbidity-grid, .flags-grid-inner { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <div>
+        <div class="header-title">Ambulatory TJA Risk Calculator</div>
+        <div class="header-subtitle">Research Model · AUC 0.734 · n=237,417 · Isotonic Calibration · 5.70% Validated Threshold</div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">Reset</button>
+</div>
+
+<div class="container">
+    <div class="form-section">
+
+        <!-- DEMOGRAPHICS & PROCEDURE -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-dot"></div>
+                <span class="section-title">Demographics &amp; Procedure</span>
+            </div>
+            <div class="demographics-row">
+                <div class="number-input-container">
+                    <span class="input-label">Age</span>
+                    <input type="number" id="age" class="number-input" value="65" min="18" max="100" oninput="update()">
+                    <span class="unit-label">yrs</span>
+                </div>
+                <div class="number-input-container">
+                    <span class="input-label">Sex</span>
+                    <div class="button-group">
+                        <button id="sex-f" class="btn btn-active"   onclick="setVal('sex','F')">Female</button>
+                        <button id="sex-m" class="btn btn-inactive" onclick="setVal('sex','M')">Male</button>
+                    </div>
+                </div>
+                <div class="number-input-container">
+                    <span class="input-label">BMI</span>
+                    <input type="number" id="bmi" class="number-input" value="28" min="15" max="70" step="0.1" oninput="update()">
+                    <span class="unit-label">kg/m²</span>
+                </div>
+                <div class="number-input-container">
+                    <span class="input-label">Procedure</span>
+                    <div class="button-group">
+                        <button id="proc-tka" class="btn btn-active"   onclick="setVal('procedure','TKA')">TKA</button>
+                        <button id="proc-tha" class="btn btn-inactive" onclick="setVal('procedure','THA')">THA</button>
+                    </div>
+                </div>
+                <div class="number-input-container">
+                    <span class="input-label">ASA Class</span>
+                    <div class="button-group">
+                        <button id="asa-1" class="btn btn-inactive" onclick="setVal('asa',1)">I</button>
+                        <button id="asa-2" class="btn btn-active"   onclick="setVal('asa',2)">II</button>
+                        <button id="asa-3" class="btn btn-inactive" onclick="setVal('asa',3)">III</button>
+                        <button id="asa-4" class="btn btn-inactive" onclick="setVal('asa',4)">IV</button>
+                    </div>
+                </div>
+                <div class="number-input-container">
+                    <span class="input-label">Systolic BP</span>
+                    <div class="button-group">
+                        <button id="sbp-normal"   class="btn btn-active"   onclick="setVal('sbp','normal')">&lt;140</button>
+                        <button id="sbp-elevated" class="btn btn-inactive" onclick="setVal('sbp','elevated')">140–160</button>
+                        <button id="sbp-high"     class="btn btn-inactive" onclick="setVal('sbp','high')">&gt;160</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- LABORATORY VALUES -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-dot section-dot-amber"></div>
+                <span class="section-title">Laboratory Values</span>
+                <span class="section-note">— ranks 3–7 &amp; 12–14 by predictive importance</span>
+            </div>
+            <div class="lab-grid">
+                <div class="lab-row">
+                    <span class="lab-label">Hemoglobin</span>
+                    <div class="button-group">
+                        <button id="hgb-normal"   class="btn btn-active"   onclick="setVal('hgb','normal')">Normal</button>
+                        <button id="hgb-mild"     class="btn btn-inactive" onclick="setVal('hgb','mild')">Mild anemia</button>
+                        <button id="hgb-moderate" class="btn btn-inactive" onclick="setVal('hgb','moderate')">Mod–severe</button>
+                        <button id="hgb-missing"  class="btn btn-inactive" onclick="setVal('hgb','missing')">Not ordered</button>
+                    </div>
+                </div>
+                <div class="lab-row">
+                    <span class="lab-label">Creatinine</span>
+                    <div class="button-group">
+                        <button id="cr-normal"   class="btn btn-active"   onclick="setVal('creatinine','normal')">&lt;1.2</button>
+                        <button id="cr-elevated" class="btn btn-inactive" onclick="setVal('creatinine','elevated')">1.2–1.5</button>
+                        <button id="cr-high"     class="btn btn-inactive" onclick="setVal('creatinine','high')">1.5–2.0</button>
+                        <button id="cr-very"     class="btn btn-inactive" onclick="setVal('creatinine','very')">&gt;2.0</button>
+                    </div>
+                </div>
+                <div class="lab-row">
+                    <span class="lab-label">Albumin</span>
+                    <div class="button-group">
+                        <button id="alb-normal"     class="btn btn-active"   onclick="setVal('albumin','normal')">≥3.5</button>
+                        <button id="alb-borderline" class="btn btn-inactive" onclick="setVal('albumin','borderline')">3.0–3.5</button>
+                        <button id="alb-low"        class="btn btn-inactive" onclick="setVal('albumin','low')">&lt;3.0</button>
+                    </div>
+                </div>
+                <div class="lab-row">
+                    <span class="lab-label">INR</span>
+                    <div class="button-group">
+                        <button id="inr-normal"   class="btn btn-active"   onclick="setVal('inr','normal')">&lt;1.2</button>
+                        <button id="inr-elevated" class="btn btn-inactive" onclick="setVal('inr','elevated')">1.2–2.0</button>
+                        <button id="inr-high"     class="btn btn-inactive" onclick="setVal('inr','high')">&gt;2.0</button>
+                    </div>
+                </div>
+                <div class="lab-row">
+                    <span class="lab-label">WBC (pre-op)</span>
+                    <div class="button-group">
+                        <button id="wbc-normal"   class="btn btn-active"   onclick="setVal('wbc','normal')">Normal</button>
+                        <button id="wbc-abnormal" class="btn btn-inactive" onclick="setVal('wbc','abnormal')">Abnormal</button>
+                        <button id="wbc-missing"  class="btn btn-inactive" onclick="setVal('wbc','missing')">Not ordered</button>
+                    </div>
+                </div>
+                <div class="lab-note">
+                    Hemoglobin is the 3rd strongest predictor overall. WBC not ordered pre-operatively carries independent risk (rank 5). Creatinine, albumin, and INR are ranks 7, 10, and 14 respectively.
+                </div>
+            </div>
+        </div>
+
+        <!-- COMORBIDITIES -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-dot section-dot-teal"></div>
+                <span class="section-title">Comorbidities</span>
+                <span class="section-note">— total count is the single strongest predictor</span>
+                <span id="comorbidity-badge" class="comorbidity-count-badge">0 active</span>
+            </div>
+            <div class="comorbidity-grid">
+                <div class="toggle-container" onclick="toggleFlag('has_hypertension')">
+                    <span class="toggle-label" id="label-has_hypertension">Hypertension</span>
+                    <div class="toggle-switch" id="toggle-has_hypertension"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_heart_disease')">
+                    <span class="toggle-label" id="label-has_heart_disease">Heart disease</span>
+                    <div class="toggle-switch" id="toggle-has_heart_disease"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_copd')">
+                    <span class="toggle-label" id="label-has_copd">COPD</span>
+                    <div class="toggle-switch" id="toggle-has_copd"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_diabetes')">
+                    <span class="toggle-label" id="label-has_diabetes">Diabetes</span>
+                    <div class="toggle-switch" id="toggle-has_diabetes"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_ckd')">
+                    <span class="toggle-label" id="label-has_ckd">Chronic kidney disease</span>
+                    <div class="toggle-switch" id="toggle-has_ckd"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_bleeding_disorder')">
+                    <span class="toggle-label" id="label-has_bleeding_disorder">Bleeding disorder</span>
+                    <div class="toggle-switch" id="toggle-has_bleeding_disorder"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_sleep_apnea')">
+                    <span class="toggle-label" id="label-has_sleep_apnea">Sleep apnea</span>
+                    <div class="toggle-switch" id="toggle-has_sleep_apnea"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_liver_disease')">
+                    <span class="toggle-label" id="label-has_liver_disease">Liver disease / cirrhosis</span>
+                    <div class="toggle-switch" id="toggle-has_liver_disease"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_malignancy')">
+                    <span class="toggle-label" id="label-has_malignancy">Active malignancy</span>
+                    <div class="toggle-switch" id="toggle-has_malignancy"><div class="toggle-knob"></div></div>
+                </div>
+                <div class="toggle-container" onclick="toggleFlag('has_thyroid_disease')">
+                    <span class="toggle-label" id="label-has_thyroid_disease">Thyroid disease</span>
+                    <div class="toggle-switch" id="toggle-has_thyroid_disease"><div class="toggle-knob"></div></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEALTHCARE UTILIZATION -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-dot section-dot-muted"></div>
+                <span class="section-title">Healthcare Utilization (prior 12 months)</span>
+                <span class="section-note">— 6.8% model importance</span>
+            </div>
+            <div class="utilization-box">
+                <div class="number-input-container">
+                    <span class="input-label input-label-wide">Hospitalizations</span>
+                    <input type="number" id="hospitalizations" class="number-input" value="0" min="0" max="20" oninput="update()">
+                </div>
+                <div class="number-input-container">
+                    <span class="input-label input-label-wide">ED visits</span>
+                    <div class="button-group">
+                        <button id="ed-no"  class="btn btn-active"   onclick="setVal('ed_visits',false)">None</button>
+                        <button id="ed-1"   class="btn btn-inactive" onclick="setVal('ed_visits',1)">1</button>
+                        <button id="ed-2p"  class="btn btn-inactive" onclick="setVal('ed_visits',2)">2+</button>
+                    </div>
+                </div>
+                <div class="utilization-note">
+                    Prior utilization contributes 6.8% of predictive weight. Comorbidity burden and laboratory values are substantially stronger predictors.
+                </div>
+            </div>
+        </div>
+
+        <!-- HIGH-RISK CLINICAL FLAGS -->
+        <div class="section">
+            <div class="section-header">
+                <div class="section-dot section-dot-rose"></div>
+                <span class="section-title">High-Risk Clinical Flags</span>
+                <span class="section-note">— conditions with independent risk contribution</span>
+            </div>
+            <div class="flags-grid">
+                <div class="flags-grid-inner">
+                    <div class="toggle-container" onclick="toggleFlag('flag_insulin')">
+                        <span class="toggle-label" id="label-flag_insulin">Insulin-dependent diabetes</span>
+                        <div class="toggle-switch" id="toggle-flag_insulin"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_arrhythmia')">
+                        <span class="toggle-label" id="label-flag_arrhythmia">Arrhythmia requiring management</span>
+                        <div class="toggle-switch" id="toggle-flag_arrhythmia"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_chest_pain')">
+                        <span class="toggle-label" id="label-flag_chest_pain">Recurrent chest pain / unstable angina</span>
+                        <div class="toggle-switch" id="toggle-flag_chest_pain"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_anticoagulant')">
+                        <span class="toggle-label" id="label-flag_anticoagulant">Anticoagulation therapy</span>
+                        <div class="toggle-switch" id="toggle-flag_anticoagulant"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_mi_stroke')">
+                        <span class="toggle-label" id="label-flag_mi_stroke">Recent MI or stroke (&lt;6 months)</span>
+                        <div class="toggle-switch" id="toggle-flag_mi_stroke"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_pacemaker')">
+                        <span class="toggle-label" id="label-flag_pacemaker">Pacemaker / AICD</span>
+                        <div class="toggle-switch" id="toggle-flag_pacemaker"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_home_o2')">
+                        <span class="toggle-label" id="label-flag_home_o2">Home oxygen dependency</span>
+                        <div class="toggle-switch" id="toggle-flag_home_o2"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_organ_failure')">
+                        <span class="toggle-label" id="label-flag_organ_failure">Active organ failure</span>
+                        <div class="toggle-switch" id="toggle-flag_organ_failure"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_transplant')">
+                        <span class="toggle-label" id="label-flag_transplant">Solid organ transplant</span>
+                        <div class="toggle-switch" id="toggle-flag_transplant"><div class="toggle-knob"></div></div>
+                    </div>
+                    <div class="toggle-container" onclick="toggleFlag('flag_substance')">
+                        <span class="toggle-label" id="label-flag_substance">Active substance use disorder</span>
+                        <div class="toggle-switch" id="toggle-flag_substance"><div class="toggle-knob"></div></div>
+                    </div>
+                </div>
+                <div class="flags-note">
+                    Predicted risk ≤5.70% may support ambulatory consideration for most flags with appropriate clearance. Recent MI/stroke is the exception and warrants inpatient regardless of model score.
+                </div>
+            </div>
+        </div>
+
+        <!-- REFERENCE TABLE (collapsible) -->
+        <div class="section">
+            <button class="reference-toggle-btn" id="ref-toggle-btn" onclick="toggleReference()">
+                <span style="color:#4f90f6; font-size:10px;">▶</span>
+                <span style="font-weight:600; color:#94a3b8;">Reference: Published Ambulatory TJA Eligibility Criteria</span>
+                <span style="color:#475569;">— expand for bedside comparison</span>
+                <span class="ref-chevron" id="ref-chevron">▼</span>
+            </button>
+            <div class="reference-panel" id="reference-panel">
+                <table class="ref-table">
+                    <thead>
+                        <tr>
+                            <th style="width:28%">Criterion</th>
+                            <th style="width:26%">Published Standard</th>
+                            <th style="width:46%">Model Finding</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="ref-criterion">Age</span></td>
+                            <td><span class="ref-standard">≥45 years</span></td>
+                            <td>Continuous predictor (rank 6). Non-linear effect above 75.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">BMI</span></td>
+                            <td><span class="ref-standard">&lt;40 kg/m²</span><br><span class="ref-conditional">40–44 conditional</span></td>
+                            <td>Rank 8 predictor. Risk increases meaningfully at BMI ≥35; threshold effect at 40.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">ASA Class</span></td>
+                            <td><span class="ref-standard">I–II</span><br><span class="ref-conditional">III case-by-case</span><br><span class="ref-exclusion">IV excluded</span></td>
+                            <td>Proxy for ASA included; independently predictive. ASA IV carries substantial weight.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Blood Pressure</span></td>
+                            <td><span class="ref-standard">&lt;160/90 mmHg</span></td>
+                            <td>Systolic BP rank 15. Threshold effect above 160; modest contributor overall.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Hemoglobin</span></td>
+                            <td><span class="ref-standard">≥10 g/dL (F) / ≥11 g/dL (M)</span></td>
+                            <td><strong style="color:#f59e0b">Rank 3 overall</strong>. Strongest individual lab predictor. Graded risk across severity levels.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Creatinine</span></td>
+                            <td><span class="ref-standard">&lt;1.5 mg/dL</span></td>
+                            <td>Rank 7. Non-linear; risk accelerates above 1.5. CKD toggle also carries weight.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Albumin</span></td>
+                            <td><span class="ref-standard">≥3.5 g/dL</span></td>
+                            <td>Rank 10. Important nutritional marker; borderline 3.0–3.5 also elevated risk.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">INR</span></td>
+                            <td><span class="ref-standard">&lt;1.5</span><br><span class="ref-exclusion">≥2.0 excluded</span></td>
+                            <td>Rank 14. Graded effect; anticoagulation also flagged separately.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Platelets</span></td>
+                            <td><span class="ref-standard">≥100k/µL</span></td>
+                            <td>Rank 18. Modest independent contribution; captured via comorbidity burden.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">WBC</span></td>
+                            <td><span class="ref-standard">4–11 × 10³/µL</span></td>
+                            <td><strong style="color:#f59e0b">Rank 5</strong>. Abnormal value <em>and</em> not-ordered both carry independent risk.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">HbA1c (diabetic)</span></td>
+                            <td><span class="ref-standard">≤7.0% (controlled)</span><br><span class="ref-exclusion">&gt;8.0% excluded by most</span></td>
+                            <td>Contextual predictor; most impact when combined with comorbidity burden.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Insulin use</span></td>
+                            <td><span class="ref-exclusion">Absolute exclusion (most guidelines)</span></td>
+                            <td><strong style="color:#34d399">Lower independent risk than assumed.</strong> Model weight rank 23. Predicted risk ≤5.70% frequently achievable.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Arrhythmia</span></td>
+                            <td><span class="ref-exclusion">Absolute exclusion (most guidelines)</span></td>
+                            <td>Rank 8 (SHAP). Risk is real but not prohibitive for all arrhythmia types when other factors favorable.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Recent MI / Stroke</span></td>
+                            <td><span class="ref-exclusion">Absolute exclusion (&lt;6 months)</span></td>
+                            <td><strong style="color:#f87171">Maintains high model weight</strong> (rank 17). Inpatient recommended regardless of overall score.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Anticoagulation</span></td>
+                            <td><span class="ref-exclusion">Absolute exclusion (most guidelines)</span></td>
+                            <td>Independent risk contributor. Bridging protocol availability may modify consideration.</td>
+                        </tr>
+                        <tr>
+                            <td><span class="ref-criterion">Comorbidity burden</span></td>
+                            <td><span class="ref-conditional">Assessed per-condition</span></td>
+                            <td><strong style="color:#f59e0b">Rank 1 overall (SHAP 0.254)</strong>. Total count outperforms any single comorbidity as a predictor.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- end form-section -->
+
+    <!-- RESULTS PANEL -->
+    <div class="results-panel">
+
+        <div class="card">
+            <svg id="risk-gauge" width="160" height="160" viewBox="0 0 160 160" class="risk-gauge-container">
+                <g transform="rotate(135 80 80)">
+                    <circle cx="80" cy="80" r="72" fill="none" stroke="#1e293b"
+                        stroke-width="16" stroke-dasharray="339.29 113.10" stroke-linecap="round"/>
+                    <circle id="risk-arc" cx="80" cy="80" r="72" fill="none" stroke="#4ade80"
+                        stroke-width="16" stroke-dasharray="0 452.39" stroke-linecap="round"
+                        style="transition: stroke-dasharray 0.35s ease, stroke 0.25s ease"/>
+                </g>
+                <text id="risk-pct" x="80" y="75" text-anchor="middle" fill="#fff"
+                    font-size="26" font-weight="700" style="font-family: system-ui">–</text>
+                <text x="80" y="94" text-anchor="middle" fill="#64748b" font-size="10"
+                    style="font-family: system-ui">90-day adverse risk</text>
+            </svg>
+            <div class="risk-legend">
+                <span style="color:#22d3ee">● V.Low &lt;3%</span>
+                <span style="color:#4ade80">● Low 3–5.7%</span>
+                <span style="color:#f0a832">● Mod 5.7–10%</span>
+                <span style="color:#f97316">● High 10–16%</span>
+                <span style="color:#e8475f">● V.High &gt;16%</span>
+            </div>
+            <div class="risk-category-row">
+                <span class="risk-category-label">Risk Category</span>
+                <span id="risk-category" class="risk-category-value" style="color:#4ade80">–</span>
+            </div>
+            <div class="risk-category-row" style="border-top:none; margin-top:4px; padding-top:0;">
+                <span class="risk-category-label">Ambulatory threshold (5.70%)</span>
+                <span id="threshold-status" class="risk-category-value" style="font-size:10px; color:#64748b">–</span>
+            </div>
+        </div>
+
+        <div class="assessment-card">
+            <div class="assessment-title">Ambulatory Suitability</div>
+            <div id="assessment-body">
+                <div style="color:#64748b; font-size:11px;">Enter patient data to assess.</div>
+            </div>
+        </div>
+
+        <div id="recommendation-card" class="recommendation-card" style="border:1px solid #1e293b; background:#131822;">
+            <div id="recommendation-title" class="recommendation-title" style="color:#94a3b8;">Awaiting input</div>
+            <div id="recommendation-body" class="recommendation-body">Complete the form to generate a recommendation.</div>
+        </div>
+
+        <div class="footer-text">
+            <span class="footer-emphasis">Validated Research Model.</span> 237,417 patients across multiple institutions. Comorbidity burden and laboratory values account for 93.2% of predictive weight. Threshold of 5.70% validated against observed outcomes. For research and clinical decision support — not a substitute for clinical judgment.
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // ── State ────────────────────────────────────────────────────────────────
+    let pt = {
+        age: 65, sex: 'F', bmi: 28, procedure: 'TKA',
+        asa: 2, sbp: 'normal',
+        hgb: 'normal', creatinine: 'normal',
+        albumin: 'normal', inr: 'normal', wbc: 'normal',
+        hospitalizations: 0, ed_visits: false,
+        // Comorbidities
+        has_hypertension: false, has_heart_disease: false, has_copd: false,
+        has_diabetes: false, has_ckd: false, has_bleeding_disorder: false,
+        has_sleep_apnea: false, has_liver_disease: false,
+        has_malignancy: false, has_thyroid_disease: false,
+        // High-risk flags
+        flag_insulin: false, flag_arrhythmia: false, flag_chest_pain: false,
+        flag_anticoagulant: false, flag_mi_stroke: false, flag_pacemaker: false,
+        flag_home_o2: false, flag_organ_failure: false,
+        flag_transplant: false, flag_substance: false
+    };
+
+    const COMORBIDITY_KEYS = [
+        'has_hypertension','has_heart_disease','has_copd','has_diabetes',
+        'has_ckd','has_bleeding_disorder','has_sleep_apnea',
+        'has_liver_disease','has_malignancy','has_thyroid_disease'
+    ];
+
+    // Flags that model treats as conditionally manageable vs absolute
+    const ABSOLUTE_FLAGS = ['flag_mi_stroke','flag_pacemaker','flag_home_o2',
+                            'flag_organ_failure','flag_transplant'];
+    const CONDITIONAL_FLAGS = ['flag_insulin','flag_arrhythmia','flag_chest_pain',
+                               'flag_anticoagulant','flag_substance'];
+    const ALL_FLAG_KEYS = [...CONDITIONAL_FLAGS, ...ABSOLUTE_FLAGS];
+    const ALL_TOGGLE_KEYS = [...COMORBIDITY_KEYS, ...ALL_FLAG_KEYS];
+
+    const THRESHOLD = 0.057;
+
+    // ── Risk calculation ─────────────────────────────────────────────────────
+    function calculateRisk() {
+        let lo = -2.85;
+
+        // Comorbidity count — rank 1 (SHAP 0.254)
+        const cc = COMORBIDITY_KEYS.filter(k => pt[k]).length;
+        lo += [0, 0.32, 0.68, 1.02, 1.42][Math.min(cc, 4)];
+
+        // Age — rank 6 (SHAP 0.092)
+        lo += (pt.age - 65) * 0.021;
+
+        // Hemoglobin — rank 3 (SHAP 0.107)
+        if      (pt.hgb === 'mild')     lo += 0.42;
+        else if (pt.hgb === 'moderate') lo += 0.88;
+        else if (pt.hgb === 'missing')  lo += 0.22;
+
+        // WBC — rank 5/12 (SHAP 0.096 / 0.051)
+        if      (pt.wbc === 'abnormal') lo += 0.38;
+        else if (pt.wbc === 'missing')  lo += 0.30;
+
+        // Creatinine — rank 7 (SHAP 0.092)
+        if      (pt.creatinine === 'elevated') lo += 0.35;
+        else if (pt.creatinine === 'high')     lo += 0.70;
+        else if (pt.creatinine === 'very')     lo += 1.10;
+
+        // BMI — rank 8 (SHAP 0.067)
+        if      (pt.bmi >= 40) lo += 0.52;
+        else if (pt.bmi >= 35) lo += 0.27;
+        else if (pt.bmi >= 30) lo += 0.12;
+
+        // Procedure — rank 9 (SHAP 0.066)
+        if (pt.procedure === 'THA') lo += 0.15;
+
+        // Albumin — rank 10 (SHAP 0.056)
+        if      (pt.albumin === 'borderline') lo += 0.32;
+        else if (pt.albumin === 'low')        lo += 0.68;
+
+        // ED visits — rank 11 (SHAP 0.053)
+        if      (pt.ed_visits === 1) lo += 0.25;
+        else if (pt.ed_visits === 2) lo += 0.45;
+
+        // Prior hospitalizations — rank 13 (SHAP 0.049)
+        const h = parseInt(pt.hospitalizations) || 0;
+        lo += [0, 0.25, 0.42, 0.68][Math.min(h, 3)];
+
+        // INR — rank 14 (SHAP 0.048)
+        if      (pt.inr === 'elevated') lo += 0.30;
+        else if (pt.inr === 'high')     lo += 0.60;
+
+        // Systolic BP — rank 15 (SHAP 0.042)
+        if      (pt.sbp === 'elevated') lo += 0.22;
+        else if (pt.sbp === 'high')     lo += 0.45;
+
+        // ASA — rank 16 proxy (SHAP 0.036)
+        if      (pt.asa === 1) lo -= 0.32;
+        else if (pt.asa === 3) lo += 0.32;
+        else if (pt.asa === 4) lo += 0.90;
+
+        // High-risk flags
+        if (pt.flag_mi_stroke)    lo += 1.05;
+        if (pt.flag_organ_failure) lo += 0.85;
+        if (pt.flag_transplant)   lo += 0.70;
+        if (pt.flag_home_o2)      lo += 0.65;
+        if (pt.flag_pacemaker)    lo += 0.40;
+        if (pt.flag_arrhythmia)   lo += 0.28;
+        if (pt.flag_anticoagulant) lo += 0.22;
+        if (pt.flag_chest_pain)   lo += 0.22;
+        if (pt.flag_insulin)      lo += 0.18;
+        if (pt.flag_substance)    lo += 0.30;
+
+        // Sex
+        if (pt.sex === 'M') lo += 0.10;
+
+        return calibrate(1 / (1 + Math.exp(-lo)));
+    }
+
+    // Piecewise isotonic calibration approximation
+    function calibrate(raw) {
+        if (raw < 0.05)  return raw * 0.88;
+        if (raw < 0.10)  return 0.044 + (raw - 0.05) * 0.90;
+        if (raw < 0.20)  return 0.089 + (raw - 0.10) * 1.00;
+        if (raw < 0.35)  return 0.189 + (raw - 0.20) * 0.95;
+        return 0.331 + (raw - 0.35) * 0.85;
+    }
+
+    function hasAnyFlag()      { return ALL_FLAG_KEYS.some(k => pt[k]); }
+    function hasAbsoluteFlag() { return ABSOLUTE_FLAGS.some(k => pt[k]); }
+    function hasConditionalFlag() { return CONDITIONAL_FLAGS.some(k => pt[k]); }
+
+    // ── Display ──────────────────────────────────────────────────────────────
+    function update() {
+        pt.age            = parseInt(document.getElementById('age').value) || 65;
+        pt.bmi            = parseFloat(document.getElementById('bmi').value) || 28;
+        pt.hospitalizations = parseInt(document.getElementById('hospitalizations').value) || 0;
+
+        const risk = calculateRisk();
+        const pct  = (risk * 100).toFixed(1);
+        const above5pct = risk > 0.05;
+
+        // Gauge arc
+        const filled = Math.min(risk / 0.35, 1) * 339.29;
+        const color = risk < 0.03 ? '#22d3ee' : risk < THRESHOLD ? '#4ade80' :
+                      risk < 0.10 ? '#f0a832' : risk < 0.16 ? '#f97316' : '#e8475f';
+        document.getElementById('risk-pct').textContent = pct + '%';
+        document.getElementById('risk-arc').setAttribute('stroke', color);
+        document.getElementById('risk-arc').setAttribute('stroke-dasharray', `${filled} ${452.39 - filled}`);
+
+        // Risk category
+        const [cat, catColor] =
+            risk < 0.03       ? ['Very Low',  '#22d3ee'] :
+            risk < THRESHOLD  ? ['Low',       '#4ade80'] :
+            risk < 0.10       ? ['Moderate',  '#f0a832'] :
+            risk < 0.16       ? ['High',      '#f97316'] :
+                                ['Very High', '#e8475f'];
+        document.getElementById('risk-category').textContent = cat;
+        document.getElementById('risk-category').style.color = catColor;
+
+        const threshEl = document.getElementById('threshold-status');
+        if (risk <= THRESHOLD) {
+            threshEl.textContent = '✓ Below threshold';
+            threshEl.style.color = '#4ade80';
+        } else {
+            threshEl.textContent = `+${((risk - THRESHOLD)*100).toFixed(1)}% above`;
+            threshEl.style.color = '#f87171';
+        }
+
+        // Comorbidity badge
+        const cc = COMORBIDITY_KEYS.filter(k => pt[k]).length;
+        const badge = document.getElementById('comorbidity-badge');
+        badge.textContent = `${cc} active`;
+        badge.className = 'comorbidity-count-badge' + (cc >= 3 ? ' count-high' : '');
+
+        // Flag names for display
+        const flagNames = {
+            flag_insulin:      'Insulin-dependent diabetes',
+            flag_arrhythmia:   'Arrhythmia',
+            flag_chest_pain:   'Recurrent chest pain',
+            flag_anticoagulant:'Anticoagulation',
+            flag_mi_stroke:    'Recent MI or stroke',
+            flag_pacemaker:    'Pacemaker / AICD',
+            flag_home_o2:      'Home oxygen dependency',
+            flag_organ_failure:'Active organ failure',
+            flag_transplant:   'Solid organ transplant',
+            flag_substance:    'Active substance use disorder'
+        };
+
+        const activeFlags = ALL_FLAG_KEYS.filter(k => pt[k]).map(k => flagNames[k]);
+        const absActive   = ABSOLUTE_FLAGS.filter(k => pt[k]).map(k => flagNames[k]);
+        const condActive  = CONDITIONAL_FLAGS.filter(k => pt[k]).map(k => flagNames[k]);
+
+        // Ambulatory suitability assessment
+        const aDiv = document.getElementById('assessment-body');
+        if (pt.flag_mi_stroke || (hasAbsoluteFlag() && risk > THRESHOLD)) {
+            const reasons = absActive.length ? absActive : activeFlags;
+            aDiv.innerHTML = `
+                <div class="flag-header">🔴 High-Risk Flags Present</div>
+                ${reasons.map(f => `<div class="flag-item">${f}</div>`).join('')}`;
+        } else if (hasConditionalFlag() && risk <= THRESHOLD) {
+            aDiv.innerHTML = `
+                <div class="assess-candidate">
+                    ⚡ Ambulatory Candidate Despite Risk Flags (${pct}% ≤ 5.70%)
+                    <div class="assess-note">
+                        Predicted risk below validated threshold. Clinical clearance recommended for flagged conditions.
+                    </div>
+                </div>`;
+        } else if (!hasAnyFlag() && risk <= THRESHOLD) {
+            aDiv.innerHTML = `
+                <div class="assess-success">
+                    ✅ Suitable for Ambulatory (${pct}% ≤ 5.70%)
+                    <div class="assess-note">No high-risk flags. Below safe threshold.</div>
+                </div>`;
+        } else if (hasAnyFlag() && risk > THRESHOLD) {
+            aDiv.innerHTML = `
+                <div class="flag-header">⚠️ Elevated Risk + Clinical Flags</div>
+                ${activeFlags.map(f => `<div class="flag-item">${f}</div>`).join('')}
+                <div class="assess-note" style="margin-top:4px;">${pct}% exceeds 5.70% threshold</div>`;
+        } else {
+            aDiv.innerHTML = `
+                <div class="assess-warning">
+                    ⚠️ Above Ambulatory Threshold (${pct}%)
+                    <div class="assess-note">No high-risk flags, but elevated predicted risk. Clinical judgment recommended.</div>
+                </div>`;
+        }
+
+        // Recommendation card
+        let rec;
+        if (pt.flag_mi_stroke) {
+            rec = {
+                title: '🔴 Inpatient Recommended',
+                body:  `Recent MI or stroke carries high independent risk regardless of overall score (${pct}%). Inpatient monitoring warranted.`,
+                bg: '#1f0a0e', border: '#991b1b', tc: '#f87171'
+            };
+        } else if (hasAbsoluteFlag() && risk > THRESHOLD) {
+            rec = {
+                title: '🔴 Inpatient Recommended',
+                body:  `Predicted risk ${pct}% exceeds threshold with high-risk flag(s) present (${absActive.join(', ')}). Ambulatory setting not appropriate.`,
+                bg: '#1f0a0e', border: '#991b1b', tc: '#f87171'
+            };
+        } else if (condActive.length > 0 && risk <= THRESHOLD) {
+            const primary = condActive[0];
+            rec = {
+                title: '⚡ Ambulatory Candidate — Clearance Advised',
+                body:  `Predicted risk ${pct}% is at or below the validated ambulatory benchmark despite ${primary.toLowerCase()}${condActive.length > 1 ? ' and other flags' : ''}. Specialist clearance recommended before proceeding.`,
+                bg: '#0d1f18', border: '#065f46', tc: '#34d399'
+            };
+        } else if (!hasAnyFlag() && risk < 0.03) {
+            rec = {
+                title: '✅ Optimal Ambulatory Candidate',
+                body:  `Very low predicted risk (${pct}%). No high-risk flags. Well below ambulatory threshold. Excellent same-day discharge candidate.`,
+                bg: '#0f2a1a', border: '#166534', tc: '#4ade80'
+            };
+        } else if (risk <= THRESHOLD) {
+            rec = {
+                title: '✅ Suitable for Ambulatory',
+                body:  `Predicted risk ${pct}% is within the validated ambulatory range (≤5.70%). No prohibitive flags identified. Appropriate for same-day discharge planning.`,
+                bg: '#0f2a1a', border: '#166534', tc: '#4ade80'
+            };
+        } else if (risk <= 0.10) {
+            rec = {
+                title: '⚠️ Consider with Caution',
+                body:  `Predicted risk ${pct}% exceeds the ambulatory benchmark. ${hasAnyFlag() ? 'Clinical flags also present. ' : ''}Enhanced monitoring or inpatient consideration warranted depending on institutional resources.`,
+                bg: '#1a1505', border: '#854d0e', tc: '#fbbf24'
+            };
+        } else {
+            rec = {
+                title: '🔴 Inpatient Recommended',
+                body:  `Predicted risk ${pct}% significantly exceeds the ambulatory threshold. Comorbidity burden and/or laboratory findings indicate elevated 90-day adverse event risk. Inpatient setting recommended.`,
+                bg: '#1f0a0e', border: '#991b1b', tc: '#f87171'
+            };
+        }
+
+        const card = document.getElementById('recommendation-card');
+        card.style.background = rec.bg;
+        card.style.border = `1px solid ${rec.border}`;
+        document.getElementById('recommendation-title').textContent = rec.title;
+        document.getElementById('recommendation-title').style.color = rec.tc;
+        document.getElementById('recommendation-body').textContent = rec.body;
+    }
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+    function setVal(field, val) {
+        pt[field] = val;
+        const maps = {
+            sex:        { F:'sex-f', M:'sex-m' },
+            procedure:  { TKA:'proc-tka', THA:'proc-tha' },
+            asa:        { 1:'asa-1', 2:'asa-2', 3:'asa-3', 4:'asa-4' },
+            sbp:        { normal:'sbp-normal', elevated:'sbp-elevated', high:'sbp-high' },
+            hgb:        { normal:'hgb-normal', mild:'hgb-mild', moderate:'hgb-moderate', missing:'hgb-missing' },
+            creatinine: { normal:'cr-normal', elevated:'cr-elevated', high:'cr-high', very:'cr-very' },
+            albumin:    { normal:'alb-normal', borderline:'alb-borderline', low:'alb-low' },
+            inr:        { normal:'inr-normal', elevated:'inr-elevated', high:'inr-high' },
+            wbc:        { normal:'wbc-normal', abnormal:'wbc-abnormal', missing:'wbc-missing' },
+            ed_visits:  { false:'ed-no', 1:'ed-1', 2:'ed-2p' }
+        };
+        if (maps[field]) {
+            Object.values(maps[field]).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.className = 'btn btn-inactive';
+            });
+            const aId = maps[field][val];
+            if (aId && document.getElementById(aId))
+                document.getElementById(aId).className = 'btn btn-active';
+        }
+        update();
+    }
+
+    function toggleFlag(key) {
+        pt[key] = !pt[key];
+        const toggle = document.getElementById(`toggle-${key}`);
+        const label  = document.getElementById(`label-${key}`);
+        const isOn   = pt[key];
+        toggle.style.background = isOn ? '#4f90f6' : '#1e293b';
+        toggle.style.border = `1.5px solid ${isOn ? '#4f90f6' : '#334155'}`;
+        toggle.querySelector('.toggle-knob').style.left = isOn ? '18px' : '2px';
+        label.style.color = isOn ? '#e2e8f0' : '#94a3b8';
+        update();
+    }
+
+    function toggleReference() {
+        const panel = document.getElementById('reference-panel');
+        const btn   = document.getElementById('ref-toggle-btn');
+        panel.classList.toggle('open');
+        btn.classList.toggle('open');
+    }
+
+    function resetAll() {
+        pt = {
+            age: 65, sex: 'F', bmi: 28, procedure: 'TKA',
+            asa: 2, sbp: 'normal',
+            hgb: 'normal', creatinine: 'normal',
+            albumin: 'normal', inr: 'normal', wbc: 'normal',
+            hospitalizations: 0, ed_visits: false,
+            has_hypertension: false, has_heart_disease: false, has_copd: false,
+            has_diabetes: false, has_ckd: false, has_bleeding_disorder: false,
+            has_sleep_apnea: false, has_liver_disease: false,
+            has_malignancy: false, has_thyroid_disease: false,
+            flag_insulin: false, flag_arrhythmia: false, flag_chest_pain: false,
+            flag_anticoagulant: false, flag_mi_stroke: false, flag_pacemaker: false,
+            flag_home_o2: false, flag_organ_failure: false,
+            flag_transplant: false, flag_substance: false
+        };
+
+        document.getElementById('age').value = 65;
+        document.getElementById('bmi').value = 28;
+        document.getElementById('hospitalizations').value = 0;
+
+        ['sex','procedure','asa','sbp','hgb','creatinine','albumin','inr','wbc','ed_visits']
+            .forEach(f => setVal(f, pt[f]));
+
+        ALL_TOGGLE_KEYS.forEach(key => {
+            const toggle = document.getElementById(`toggle-${key}`);
+            const label  = document.getElementById(`label-${key}`);
+            if (toggle) {
+                toggle.style.background = '#1e293b';
+                toggle.style.border = '1.5px solid #334155';
+                toggle.querySelector('.toggle-knob').style.left = '2px';
+            }
+            if (label) label.style.color = '#94a3b8';
+        });
+
+        update();
+    }
+
+    update();
+</script>
+</body>
+</html>
