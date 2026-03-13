@@ -1,0 +1,102 @@
+<table class="ref-table">
+    <thead>
+        <tr>
+            <th style="width:4%">Rank</th>
+            <th style="width:20%">Criterion</th>
+            <th style="width:24%">Published Standard</th>
+            <th style="width:52%">Model Finding</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="ref-rank">1</span></td>
+            <td><span class="ref-crit">Comorbidity burden</span></td>
+            <td><span class="ref-cond">Assessed per-condition</span></td>
+            <td><span class="ref-hi">SHAP 0.263 -- dominant predictor.</span> Total count outperforms any single comorbidity. Each additional condition meaningfully increases risk.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">2</span></td>
+            <td><span class="ref-crit">Procedure (THA vs TKA)</span></td>
+            <td><span class="ref-cond">Both eligible per guidelines</span></td>
+            <td><span class="ref-hi">SHAP 0.180.</span> THA carries higher inherent risk -- driven by procedure-specific complications (dislocation, nerve injury, ORIF).</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">3</span></td>
+            <td><span class="ref-crit">Anemia / Hemoglobin</span></td>
+            <td><span class="ref-std">Hgb &gt;=10 g/dL (F) / &gt;=11 g/dL (M)</span></td>
+            <td><span class="ref-hi">SHAP 0.119 + 0.067.</span> Anemia flag and hemoglobin value are both independently predictive. Graded risk across severity levels.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">4</span></td>
+            <td><span class="ref-crit">Age</span></td>
+            <td><span class="ref-std">&gt;=45 years</span></td>
+            <td>SHAP 0.083. Continuous predictor -- non-linear effect above 75. Among the top 5 most important inputs.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">5</span></td>
+            <td><span class="ref-crit">Creatinine</span></td>
+            <td><span class="ref-std">&lt;1.5 mg/dL</span></td>
+            <td>SHAP 0.070. Non-linear; risk accelerates above 1.5. Stronger predictor than most exclusion flags.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">6</span></td>
+            <td><span class="ref-crit">Prior ED visits</span></td>
+            <td><span class="ref-cond">Not in published criteria</span></td>
+            <td>SHAP 0.049. Strongest utilization predictor. Any prior ED visit carries independent risk beyond comorbidity count alone.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">7</span></td>
+            <td><span class="ref-crit">BMI</span></td>
+            <td><span class="ref-std">&lt;40 kg/m2</span> &nbsp; <span class="ref-cond">40-44 conditional</span></td>
+            <td>SHAP 0.044. Risk increases meaningfully at BMI &gt;=35; threshold effect at 40.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">8</span></td>
+            <td><span class="ref-crit">Prior hospitalizations</span></td>
+            <td><span class="ref-cond">Not in published criteria</span></td>
+            <td>SHAP 0.042. Inpatient utilization history independently predicts 90-day adverse events.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">9</span></td>
+            <td><span class="ref-crit">Recent MI or stroke</span></td>
+            <td><span class="ref-excl">Absolute exclusion (&lt;6 months)</span></td>
+            <td>SHAP 0.039. <span style="color:#f87171;">Maintains high risk regardless of overall score.</span> Inpatient recommended regardless of predicted probability.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">10</span></td>
+            <td><span class="ref-crit">Albumin</span></td>
+            <td><span class="ref-std">&gt;=3.5 g/dL</span></td>
+            <td>SHAP 0.034. Important nutritional marker; borderline 3.0-3.5 also carries elevated risk. Gated to liver disease patients.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">11</span></td>
+            <td><span class="ref-crit">INR</span></td>
+            <td><span class="ref-std">&lt;1.5</span> &nbsp; <span class="ref-excl">&gt;=2.0 excluded</span></td>
+            <td>SHAP 0.030. Graded effect. Anticoagulation flag carries independent risk beyond INR value alone.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">12</span></td>
+            <td><span class="ref-crit">Insulin-dependent diabetes</span></td>
+            <td><span class="ref-excl">Absolute exclusion (most guidelines)</span></td>
+            <td><span class="ref-green">SHAP 0.027 -- lower weight than assumed.</span> 54% of model-identified ambulatory candidates carry this flag. Blanket exclusion may be overly conservative.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">13</span></td>
+            <td><span class="ref-crit">WBC (pre-op)</span></td>
+            <td><span class="ref-std">4-11 x 10^3/uL</span></td>
+            <td>SHAP 0.025. Abnormal value and not-ordered both carry independent risk.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">14</span></td>
+            <td><span class="ref-crit">Blood pressure</span></td>
+            <td><span class="ref-std">&lt;160/90 mmHg</span></td>
+            <td>SHAP 0.051 + 0.022 (systolic + diastolic). Threshold effect above 160 mmHg systolic. Non-linear -- very low BP may reflect frailty or low cardiac output.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">15</span></td>
+            <td><span class="ref-crit">ASA Class</span></td>
+            <td><span class="ref-std">I-II</span> &nbsp; <span class="ref-cond">III case-by-case</span> &nbsp; <span class="ref-excl">IV excluded</span></td>
+            <td>SHAP 0.020. Lower independent weight than expected -- predictive signal largely captured by comorbidity count.</td>
+        </tr>
+    </tbody>
+</table>

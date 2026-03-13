@@ -1,0 +1,69 @@
+html, body, [class*="css"], .stApp {
+    background: #0b0e14 !important;
+    font-family: 'Segoe UI', system-ui, sans-serif !important;
+    font-size: 16px !important;
+}
+.block-container { padding: 0 0 40px 0 !important; max-width: 100% !important; }
+#MainMenu, footer, header { visibility: hidden; }
+
+/* ── Header ── */
+.app-hdr       { background:#131822; border-bottom:1px solid #1e293b; padding:14px 28px; position:sticky; top:0; z-index:100; }
+.app-hdr-title { font-size:24px; font-weight:700; color:#ffffff; }
+.app-hdr-sub   { font-size:14px; color:#64748b; margin-top:3px; font-family:'Courier New',monospace; }
+
+/* ── Section headers ── */
+.s-hdr   { display:flex; align-items:center; gap:8px; padding-bottom:8px; border-bottom:1px solid #1e293b; margin:18px 0 12px; }
+.dot     { width:7px; height:7px; border-radius:50%; flex-shrink:0; display:inline-block; }
+.dot-blue {background:#4f90f6;} .dot-amber{background:#f59e0b;}
+.dot-teal {background:#14b8a6;} .dot-rose {background:#f43f5e;} .dot-muted{background:#475569;}
+.s-title { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:1.2px; color:#94a3b8; }
+.s-note  { font-size:13px; color:#475569; font-style:italic; }
+.badge   { font-size:13px; background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:4px; padding:3px 10px; font-family:'Courier New',monospace; margin-left:auto; }
+.badge-hi{ font-size:13px; background:#1f0a0e; color:#f87171; border:1px solid #3b1518; border-radius:4px; padding:3px 10px; font-family:'Courier New',monospace; margin-left:auto; }
+
+/* ── Form card ── */
+.form-card { background:#131822; border:1px solid #1e293b; border-radius:12px; padding:22px 26px 26px 26px; margin-bottom:14px; }
+
+/* ── Lab rows ── */
+.lab-lbl  { font-size:16px; color:#e2e8f0; line-height:2.6; display:block; font-weight:500; }
+.lab-gate { font-size:14px; color:#f59e0b; background:#1a1200; border:1px solid #2a1f00; border-radius:4px; padding:5px 12px; display:inline-block; margin-top:6px; }
+
+/* ── Stale warning ── */
+.stale-warn { font-size:14px; color:#f59e0b; background:#1a1200; border:1px solid #2a1f00; border-radius:6px; padding:7px 14px; text-align:center; font-weight:600; }
+
+/* ── Result panel ── */
+.res-card { background:#131822; border-radius:10px; border:1px solid #1e293b; padding:20px; margin-bottom:14px; }
+.res-sub  { text-align:center; font-size:14px; color:#64748b; margin-bottom:14px; }
+.t-row    { display:flex; justify-content:space-between; align-items:center; font-size:16px; }
+.t-lbl    { color:#64748b; }
+.verdict  { border-radius:10px; padding:16px; margin-bottom:14px; }
+.v-title  { font-size:20px; font-weight:700; margin-bottom:8px; }
+.v-body   { font-size:16px; line-height:1.6; }
+.flag-chip{ font-size:14px; background:#1f0a0e; color:#f87171; border:1px solid #3b1518; padding:4px 10px; border-radius:4px; margin:2px 2px 0 0; display:inline-block; }
+.info-card{ background:#131822; border-radius:10px; border:1px solid #1e293b; padding:16px; margin-bottom:14px; }
+.info-ttl { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; color:#64748b; margin-bottom:10px; }
+.footer-txt{ font-size:13px; color:#475569; line-height:1.7; padding-top:8px; }
+.footer-em { color:#64748b; font-weight:600; }
+
+/* ── Reference table ── */
+.ref-table { width:100%; border-collapse:collapse; font-size:14px; }
+.ref-table th { background:#131822; color:#64748b; font-size:12px; text-transform:uppercase; letter-spacing:1px; padding:10px 14px; text-align:left; border-bottom:1px solid #1e293b; }
+.ref-table td { padding:10px 14px; color:#c8cdd8; border-bottom:1px solid #0f1419; vertical-align:top; line-height:1.6; }
+.ref-table tr:last-child td { border-bottom:none; }
+.ref-table tr:hover td { background:#131822; }
+.ref-crit  { color:#ffffff; font-weight:600; }
+.ref-rank  { color:#475569; font-size:13px; font-family:'Courier New',monospace; }
+.ref-std   { color:#4ade80; }
+.ref-cond  { color:#f59e0b; }
+.ref-excl  { color:#f87171; }
+.ref-hi    { color:#f59e0b; font-weight:700; }
+.ref-green { color:#34d399; font-weight:700; }
+
+hr { border-color:#1e293b !important; margin:14px 0 !important; }
+
+/* ── Streamlit widget font overrides ── */
+div[data-testid="stNumberInput"] label,
+div[data-testid="stRadio"] label,
+div[data-testid="stCheckbox"] label,
+div[data-testid="stSelectbox"] label { font-size: 16px !important; }
+div[data-testid="stRadio"] div[role="radiogroup"] label { font-size: 16px !important; }
