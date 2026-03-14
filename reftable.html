@@ -1,0 +1,114 @@
+<table class="ref-table">
+    <thead>
+        <tr>
+            <th style="width:4%">Rank</th>
+            <th style="width:20%">Criterion</th>
+            <th style="width:24%">Published Standard</th>
+            <th style="width:52%">Model Finding</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><span class="ref-rank">1</span></td>
+            <td><span class="ref-crit">Comorbidity burden</span></td>
+            <td><span class="ref-cond">Assessed per-condition</span></td>
+            <td><span class="ref-hi">SHAP 0.357 — dominant predictor.</span> Total count outperforms any single comorbidity by a wide margin. Each additional condition meaningfully increases risk. Strengthened after outcome refinement removed post-operative events.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">2</span></td>
+            <td><span class="ref-crit">Surgery year</span></td>
+            <td><span class="ref-cond">Not a published criterion</span></td>
+            <td><span class="ref-hi">SHAP 0.241.</span> Strong temporal trend in ambulatory outcomes over the study period. Hardcoded to 2024 in the calculator for prospective use.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">3</span></td>
+            <td><span class="ref-crit">Criterion violations (total)</span></td>
+            <td><span class="ref-cond">COSI composite score</span></td>
+            <td><span class="ref-hi">SHAP 0.126.</span> Violation count carries independent signal beyond any individual criterion. Captures cumulative borderline risk that binary eligibility rules miss.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">4</span></td>
+            <td><span class="ref-crit">Anemia / Hemoglobin</span></td>
+            <td><span class="ref-std">Hgb &gt;=10 g/dL (F) / &gt;=11 g/dL (M)</span></td>
+            <td>SHAP 0.115 (flag) + 0.080 (value). Both independently predictive. Graded risk across severity levels. Anemia flag activates hemoglobin input in the calculator.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">5</span></td>
+            <td><span class="ref-crit">Creatinine</span></td>
+            <td><span class="ref-std">&lt;1.5 mg/dL</span></td>
+            <td>SHAP 0.094. Non-linear risk acceleration above 1.5 mg/dL. Consistently a top predictor across both original and refined outcome definitions.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">6</span></td>
+            <td><span class="ref-crit">Age</span></td>
+            <td><span class="ref-std">&gt;=45 years</span></td>
+            <td>SHAP 0.093. Continuous predictor with non-linear effects. Younger patients (&lt;60) carry higher risk due to inflammatory and metabolic disease burden driving early TJA.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">7</span></td>
+            <td><span class="ref-crit">BMI</span></td>
+            <td><span class="ref-std">&lt;40 kg/m2</span> &nbsp; <span class="ref-cond">40-44 conditional</span></td>
+            <td>SHAP 0.072. Risk increases meaningfully at BMI &gt;=35; threshold effect at 40. Higher BMI patients who reach surgery represent a selected, well-optimized group.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">8</span></td>
+            <td><span class="ref-crit">Prior ED visits</span></td>
+            <td><span class="ref-cond">Not in published criteria</span></td>
+            <td>SHAP 0.055. Strongest utilization predictor. Any prior ED visit carries independent risk beyond comorbidity count. Captures healthcare fragility not reflected in diagnosis codes alone.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">9</span></td>
+            <td><span class="ref-crit">Systolic BP</span></td>
+            <td><span class="ref-std">&lt;160 mmHg</span></td>
+            <td>SHAP 0.053. Threshold effect above 160 mmHg. Non-linear -- very low systolic BP may reflect frailty or low cardiac output, contributing to elevated risk at both extremes.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">10</span></td>
+            <td><span class="ref-crit">Prior hospitalizations</span></td>
+            <td><span class="ref-cond">Not in published criteria</span></td>
+            <td>SHAP 0.047. Inpatient utilization history independently predicts 90-day adverse events. Works in concert with ED visits to capture prior healthcare burden.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">11</span></td>
+            <td><span class="ref-crit">Albumin</span></td>
+            <td><span class="ref-std">&gt;=3.5 g/dL</span></td>
+            <td>SHAP 0.046. Important nutritional and hepatic marker. Borderline 3.0-3.5 g/dL also carries elevated risk. Gated to liver disease patients in the calculator.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">12</span></td>
+            <td><span class="ref-crit">WBC (pre-op)</span></td>
+            <td><span class="ref-std">4-11 x10^3/uL</span></td>
+            <td>SHAP 0.044. Both abnormal values and not-ordered carry independent risk. Rose in importance under the refined outcome definition.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">13</span></td>
+            <td><span class="ref-crit">Recent MI or stroke</span></td>
+            <td><span class="ref-excl">Absolute exclusion (&lt;6 months)</span></td>
+            <td>SHAP 0.042. <span style="color:#f87171;">Maintains high independent risk regardless of overall score.</span> Inpatient setting recommended regardless of predicted probability when this flag is active.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">14</span></td>
+            <td><span class="ref-crit">INR</span></td>
+            <td><span class="ref-std">&lt;1.5</span> &nbsp; <span class="ref-excl">&gt;=2.0 excluded</span></td>
+            <td>SHAP 0.038. Graded effect. Anticoagulation flag carries independent risk beyond INR value alone. Gated to anticoagulation patients in the calculator.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">15</span></td>
+            <td><span class="ref-crit">Procedure (THA vs TKA)</span></td>
+            <td><span class="ref-cond">Both eligible per guidelines</span></td>
+            <td>SHAP 0.034. <span class="ref-green">Substantially reduced from prior model (was SHAP 0.180).</span> After removing procedure-specific post-operative outcomes, THA and TKA carry comparable pre-operative risk profiles. Cross-validated AUC: THA 0.756, TKA 0.744.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">--</span></td>
+            <td><span class="ref-crit">ASA Class</span></td>
+            <td><span class="ref-std">I-II</span> &nbsp; <span class="ref-cond">III case-by-case</span> &nbsp; <span class="ref-excl">IV excluded</span></td>
+            <td>Low independent weight -- predictive signal largely captured by comorbidity count. Retained in calculator for clinical face validity.</td>
+        </tr>
+        <tr>
+            <td><span class="ref-rank">--</span></td>
+            <td><span class="ref-crit">Insulin-dependent diabetes</span></td>
+            <td><span class="ref-excl">Absolute exclusion (most guidelines)</span></td>
+            <td><span class="ref-green">Low individual SHAP weight.</span> Most common exclusion criterion among expansion candidates. Blanket exclusion may be overly conservative -- model assigns risk based on overall burden, not any single criterion alone.</td>
+        </tr>
+    </tbody>
+</table>
